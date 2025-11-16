@@ -16,6 +16,7 @@ model EventOrganizer {
   id             String   @id @default(cuid())
   title          String // e.g., "Sarah & John's Wedding"
   slug           String   @unique // URL-friendly identifier
+  eventCategory  String // e.g., "wedding", "corporate", "birthday", "house-warming", "conference"
   organizerName  String // Main contact/organizer name (e.g., "Sarah Johnson" or "David & Lisa Miller")
   organizerEmail String // Organizer's email for communications
   groomName      String? // Optional: for weddings
@@ -28,15 +29,16 @@ model EventOrganizer {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
-  eventTypes EventType[]
-  guestLists GuestList[]
+  events     Event[]
+  guestLists Guest[]
 
   @@index([slug])
   @@index([isActive])
+  @@index([eventCategory])
 }
 
-// 2. Event Types - Individual events within an organizer (ceremony, reception, etc.)
-model EventType {
+// 2. Events - Individual events within an organizer (ceremony, reception, etc.)
+model Event {
   id          String   @id @default(cuid())
   organizerId String
   slug        String // e.g., "ceremony", "reception", "sangeet"
@@ -56,9 +58,9 @@ model EventType {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  organizer        EventOrganizer    @relation(fields: [organizerId], references: [id], onDelete: Cascade)
-  eventInvitations EventInvitation[] // Which guests are invited to this event
-  eventResponses   EventResponse[]
+  organizer   EventOrganizer @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  invitations Invitation[] // Which guests are invited to this event
+  responses   Response[]
 
   @@unique([organizerId, slug])
   @@index([organizerId])
@@ -67,7 +69,7 @@ model EventType {
 }
 
 // 3. Guest List - Guests associated with event organizer
-model GuestList {
+model Guest {
   id            String   @id @default(cuid())
   organizerId   String
   fullName      String
@@ -79,10 +81,10 @@ model GuestList {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  organizer        EventOrganizer    @relation(fields: [organizerId], references: [id], onDelete: Cascade)
-  eventInvitations EventInvitation[] // Which events this guest is invited to
-  eventResponses   EventResponse[]
-  emailLogs        EmailLog[]
+  organizer   EventOrganizer @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  invitations Invitation[] // Which events this guest is invited to
+  responses   Response[]
+  emailLogs   EmailLog[]
 
   @@unique([organizerId, email])
   @@index([organizerId])
@@ -90,30 +92,30 @@ model GuestList {
   @@index([inviteCode])
 }
 
-// 3.1. Event Invitation - Junction table connecting guests to specific events they're invited to
-model EventInvitation {
-  id          String   @id @default(cuid())
-  guestListId String
-  eventTypeId String
-  isInvited   Boolean  @default(true) // Can be used to revoke invitation
-  invitedAt   DateTime @default(now())
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+// 3.1. Invitation - Junction table connecting guests to specific events they're invited to
+model Invitation {
+  id        String   @id @default(cuid())
+  guestId   String
+  eventId   String
+  isInvited Boolean  @default(true) // Can be used to revoke invitation
+  invitedAt DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
-  guestList GuestList @relation(fields: [guestListId], references: [id], onDelete: Cascade)
-  eventType EventType @relation(fields: [eventTypeId], references: [id], onDelete: Cascade)
+  guest Guest @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
-  @@unique([guestListId, eventTypeId]) // One invitation per guest per event
-  @@index([guestListId])
-  @@index([eventTypeId])
+  @@unique([guestId, eventId]) // One invitation per guest per event
+  @@index([guestId])
+  @@index([eventId])
   @@index([isInvited])
 }
 
-// 4. Event Response - RSVP responses for specific events
-model EventResponse {
+// 4. Response - RSVP responses for specific events
+model Response {
   id            String   @id @default(cuid())
-  guestListId   String
-  eventTypeId   String
+  guestId       String
+  eventId       String
   isAttending   Boolean
   attendeeCount Int      @default(1) // Number of people attending (including the guest)
   dietaryReqs   String?  @db.Text // Dietary requirements/restrictions
@@ -121,30 +123,30 @@ model EventResponse {
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
 
-  guestList GuestList @relation(fields: [guestListId], references: [id], onDelete: Cascade)
-  eventType EventType @relation(fields: [eventTypeId], references: [id], onDelete: Cascade)
+  guest Guest @relation(fields: [guestId], references: [id], onDelete: Cascade)
+  event Event @relation(fields: [eventId], references: [id], onDelete: Cascade)
 
-  @@unique([guestListId, eventTypeId])
-  @@index([guestListId])
-  @@index([eventTypeId])
+  @@unique([guestId, eventId])
+  @@index([guestId])
+  @@index([eventId])
   @@index([isAttending])
 }
 
 // 5. Email Log - Track email communications
 model EmailLog {
-  id          String   @id @default(cuid())
-  guestListId String
-  emailType   String // "invitation", "confirmation", "reminder", "update"
-  subject     String?
-  status      String // "sent", "failed", "pending", "delivered", "opened"
-  resendId    String? // ID from email service (e.g., Resend)
-  error       String?  @db.Text
-  sentAt      DateTime @default(now())
-  metadata    Json? // Additional data (e.g., event details, template used)
+  id        String   @id @default(cuid())
+  guestId   String
+  emailType String // "invitation", "confirmation", "reminder", "update"
+  subject   String?
+  status    String // "sent", "failed", "pending", "delivered", "opened"
+  resendId  String? // ID from email service (e.g., Resend)
+  error     String?  @db.Text
+  sentAt    DateTime @default(now())
+  metadata  Json? // Additional data (e.g., event details, template used)
 
-  guestList GuestList @relation(fields: [guestListId], references: [id], onDelete: Cascade)
+  guest Guest @relation(fields: [guestId], references: [id], onDelete: Cascade)
 
-  @@index([guestListId])
+  @@index([guestId])
   @@index([status])
   @@index([emailType])
   @@index([sentAt])
