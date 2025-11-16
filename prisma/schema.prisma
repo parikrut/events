@@ -1,0 +1,151 @@
+// Event Management System - Prisma Schema
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions", "fullTextSearchPostgres"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NO_SSL")
+}
+
+// 1. Event Organizer - The main event/theme (wedding, house warming, etc.)
+model EventOrganizer {
+  id             String   @id @default(cuid())
+  title          String // e.g., "Sarah & John's Wedding"
+  slug           String   @unique // URL-friendly identifier
+  organizerName  String // Main contact/organizer name (e.g., "Sarah Johnson" or "David & Lisa Miller")
+  organizerEmail String // Organizer's email for communications
+  groomName      String? // Optional: for weddings
+  brideName      String? // Optional: for weddings
+  hostName       String? // For non-wedding events (e.g., house warming host)
+  description    String?  @db.Text
+  theme          String? // Color theme or style preference
+  logoUrl        String? // Optional logo/image for the event
+  isActive       Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  eventTypes EventType[]
+  guestLists GuestList[]
+
+  @@index([slug])
+  @@index([isActive])
+}
+
+// 2. Event Types - Individual events within an organizer (ceremony, reception, etc.)
+model EventType {
+  id          String   @id @default(cuid())
+  organizerId String
+  slug        String // e.g., "ceremony", "reception", "sangeet"
+  name        String // Display name: "Wedding Ceremony", "Reception Dinner"
+  description String?  @db.Text
+  date        DateTime // Event date
+  time        String // Display time (e.g., "6:00 PM")
+  epochTime   BigInt // Unix timestamp for sorting/filtering
+  timezone    String // e.g., "America/New_York", "Asia/Kolkata"
+  country     String? // Country name
+  venue       String // Venue name
+  address     String // Full address
+  addressUrl  String? // Google Maps or venue website URL
+  dressCode   String? // e.g., "Formal", "Traditional Indian", "Cocktail"
+  capacity    Int? // Optional: max capacity for the venue
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  organizer        EventOrganizer    @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  eventInvitations EventInvitation[] // Which guests are invited to this event
+  eventResponses   EventResponse[]
+
+  @@unique([organizerId, slug])
+  @@index([organizerId])
+  @@index([date])
+  @@index([epochTime])
+}
+
+// 3. Guest List - Guests associated with event organizer
+model GuestList {
+  id            String   @id @default(cuid())
+  organizerId   String
+  fullName      String
+  email         String
+  phone         String?
+  attendeeLimit Int      @default(-1) // -1 = no limit, positive number = max attendees (including guest)
+  inviteCode    String?  @unique // Unique code for RSVP access
+  notes         String?  @db.Text // Internal notes about the guest
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  organizer        EventOrganizer    @relation(fields: [organizerId], references: [id], onDelete: Cascade)
+  eventInvitations EventInvitation[] // Which events this guest is invited to
+  eventResponses   EventResponse[]
+  emailLogs        EmailLog[]
+
+  @@unique([organizerId, email])
+  @@index([organizerId])
+  @@index([email])
+  @@index([inviteCode])
+}
+
+// 3.1. Event Invitation - Junction table connecting guests to specific events they're invited to
+model EventInvitation {
+  id          String   @id @default(cuid())
+  guestListId String
+  eventTypeId String
+  isInvited   Boolean  @default(true) // Can be used to revoke invitation
+  invitedAt   DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  guestList GuestList @relation(fields: [guestListId], references: [id], onDelete: Cascade)
+  eventType EventType @relation(fields: [eventTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([guestListId, eventTypeId]) // One invitation per guest per event
+  @@index([guestListId])
+  @@index([eventTypeId])
+  @@index([isInvited])
+}
+
+// 4. Event Response - RSVP responses for specific events
+model EventResponse {
+  id            String   @id @default(cuid())
+  guestListId   String
+  eventTypeId   String
+  isAttending   Boolean
+  attendeeCount Int      @default(1) // Number of people attending (including the guest)
+  dietaryReqs   String?  @db.Text // Dietary requirements/restrictions
+  message       String?  @db.Text // Optional message from guest
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  guestList GuestList @relation(fields: [guestListId], references: [id], onDelete: Cascade)
+  eventType EventType @relation(fields: [eventTypeId], references: [id], onDelete: Cascade)
+
+  @@unique([guestListId, eventTypeId])
+  @@index([guestListId])
+  @@index([eventTypeId])
+  @@index([isAttending])
+}
+
+// 5. Email Log - Track email communications
+model EmailLog {
+  id          String   @id @default(cuid())
+  guestListId String
+  emailType   String // "invitation", "confirmation", "reminder", "update"
+  subject     String?
+  status      String // "sent", "failed", "pending", "delivered", "opened"
+  resendId    String? // ID from email service (e.g., Resend)
+  error       String?  @db.Text
+  sentAt      DateTime @default(now())
+  metadata    Json? // Additional data (e.g., event details, template used)
+
+  guestList GuestList @relation(fields: [guestListId], references: [id], onDelete: Cascade)
+
+  @@index([guestListId])
+  @@index([status])
+  @@index([emailType])
+  @@index([sentAt])
+}

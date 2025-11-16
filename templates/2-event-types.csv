@@ -1,0 +1,5 @@
+slug,name,description,date,time,timezone,country,venue,address,addressUrl,dressCode,capacity
+mehndi,Mehndi Ceremony,Traditional mehndi ceremony with music and dance,2025-12-20,3:00 PM,Asia/Kolkata,India,Patel Residence Garden,"123 MG Road, Ahmedabad, Gujarat 380001",https://maps.google.com/?q=123+MG+Road+Ahmedabad,Colorful Traditional Indian - Ladies Only,75
+sangeet,Sangeet Night,An evening of music and dance performances,2025-12-21,7:00 PM,Asia/Kolkata,India,Grand Palace Banquet Hall,"456 SG Highway, Ahmedabad, Gujarat 380015",https://maps.google.com/?q=456+SG+Highway+Ahmedabad,Festive Indian Wear,200
+wedding-ceremony,Wedding Ceremony,Traditional Hindu wedding ceremony,2025-12-22,10:00 AM,Asia/Kolkata,India,Shree Ram Mandir,"789 Temple Road, Ahmedabad, Gujarat 380006",https://maps.google.com/?q=789+Temple+Road+Ahmedabad,Traditional Indian - Formal,500
+reception,Wedding Reception,Grand reception dinner with entertainment,2025-12-22,7:00 PM,Asia/Kolkata,India,The Grand Taj Palace,"999 Ashram Road, Ahmedabad, Gujarat 380009",https://maps.google.com/?q=999+Ashram+Road+Ahmedabad,Formal Indian or Western,800
