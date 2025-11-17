@@ -25,7 +25,7 @@ export default function Header({ hostName, hostEmail }: HeaderProps) {
     const { toast } = useToast();
     const pathname = usePathname();
     const [lineupData, setLineupData] = useState<{ slug: string; title: string } | null>(null);
-    
+
     const initials = hostName
         .split(" ")
         .map((n) => n[0])
@@ -35,7 +35,7 @@ export default function Header({ hostName, hostEmail }: HeaderProps) {
 
     useEffect(() => {
         const lineupId = pathname?.split("/")[2];
-        
+
         if (lineupId && lineupId !== "profile") {
             getLineupById(lineupId).then((result) => {
                 if (result.success && result.lineup) {
@@ -54,10 +54,10 @@ export default function Header({ hostName, hostEmail }: HeaderProps) {
 
     const copyRsvpLink = () => {
         if (!lineupData) return;
-        
+
         const rsvpUrl = `${window.location.origin}/events/${lineupData.slug}`;
         navigator.clipboard.writeText(rsvpUrl);
-        
+
         toast({
             title: "RSVP Link Copied!",
             description: `Link copied to clipboard for ${lineupData.title}`,
