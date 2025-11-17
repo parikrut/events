@@ -3,12 +3,12 @@
 import { prisma } from "@/lib/prisma";
 import { sendRSVPConfirmationEmail } from "@/lib/email";
 
-export async function checkGuestByName(fullName: string, organizerId: string) {
+export async function checkGuestByName(fullName: string, lineupId: string) {
     try {
         // Find exact match
         const exactMatch = await prisma.guest.findFirst({
             where: {
-                organizerId,
+                lineupId,
                 fullName: {
                     equals: fullName,
                     mode: "insensitive",
@@ -52,7 +52,7 @@ export async function checkGuestByName(fullName: string, organizerId: string) {
         // Find similar names for suggestions
         const similarGuests = await prisma.guest.findMany({
             where: {
-                organizerId,
+                lineupId,
                 fullName: {
                     contains: fullName.split(" ")[0], // Search by first name
                     mode: "insensitive",
@@ -89,11 +89,11 @@ export async function submitRSVP(data: {
     }>;
 }) {
     try {
-        // Get guest with organizer info for email
+        // Get guest with lineup info for email
         const guest = await prisma.guest.findUnique({
             where: { id: data.guestId },
             include: {
-                organizer: {
+                lineup: {
                     select: {
                         title: true,
                         organizerName: true,
@@ -180,9 +180,9 @@ export async function submitRSVP(data: {
                     guest.fullName,
                     data.email,
                     eventDetails,
-                    guest.organizer.organizerName,
-                    guest.organizer.organizerEmail,
-                    guest.organizer.title
+                    guest.lineup.organizerName,
+                    guest.lineup.organizerEmail,
+                    guest.lineup.title
                 );
 
                 emailSent = emailResult.success;

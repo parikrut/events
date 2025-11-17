@@ -55,19 +55,11 @@ export default async function ThankYouPage({ params, searchParams }: ThankYouPag
 
                         {/* Heart Logo - Center */}
                         <div className="shrink-0">
-                            {eventData.logoUrl ? (
-                                <img
-                                    src={eventData.logoUrl}
-                                    alt="Event Logo"
-                                    className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20 object-contain"
-                                />
-                            ) : (
-                                <HeartLogo
-                                    groomInitial={groomInitial}
-                                    brideInitial={brideInitial}
-                                    className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20"
-                                />
-                            )}
+                            <HeartLogo
+                                groomInitial={groomInitial}
+                                brideInitial={brideInitial}
+                                className="w-12 h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 lg:w-20 lg:h-20"
+                            />
                         </div>
 
                         {/* Bride Name - Right */}

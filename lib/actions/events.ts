@@ -4,7 +4,7 @@ import { prisma } from "@/lib/prisma";
 
 export async function getAllEventSlugs() {
     try {
-        const eventOrganizers = await prisma.eventOrganizer.findMany({
+        const eventLineups = await prisma.eventLineup.findMany({
             where: {
                 isActive: true,
             },
@@ -13,7 +13,7 @@ export async function getAllEventSlugs() {
             },
         });
 
-        return eventOrganizers.map((event) => event.slug);
+        return eventLineups.map((lineup) => lineup.slug);
     } catch (error) {
         console.error("Error fetching event slugs:", error);
         return [];
@@ -22,7 +22,7 @@ export async function getAllEventSlugs() {
 
 export async function getEventBySlug(slug: string) {
     try {
-        const eventOrganizer = await prisma.eventOrganizer.findUnique({
+        const eventLineup = await prisma.eventLineup.findUnique({
             where: {
                 slug,
                 isActive: true,
@@ -44,24 +44,21 @@ export async function getEventBySlug(slug: string) {
             },
         });
 
-        if (!eventOrganizer) {
+        if (!eventLineup) {
             return null;
         }
 
         return {
-            id: eventOrganizer.id,
-            title: eventOrganizer.title,
-            slug: eventOrganizer.slug,
-            organizerName: eventOrganizer.organizerName,
-            organizerEmail: eventOrganizer.organizerEmail,
-            groomName: eventOrganizer.groomName,
-            brideName: eventOrganizer.brideName,
-            hostName: eventOrganizer.hostName,
-            description: eventOrganizer.description,
-            theme: eventOrganizer.theme,
-            logoUrl: eventOrganizer.logoUrl,
-            guestCount: eventOrganizer._count.guestLists,
-            events: eventOrganizer.events,
+            id: eventLineup.id,
+            title: eventLineup.title,
+            slug: eventLineup.slug,
+            organizerName: eventLineup.organizerName,
+            organizerEmail: eventLineup.organizerEmail,
+            groomName: eventLineup.groomName,
+            brideName: eventLineup.brideName,
+            description: eventLineup.description,
+            guestCount: eventLineup._count.guestLists,
+            events: eventLineup.events,
         };
     } catch (error) {
         console.error("Error fetching event:", error);

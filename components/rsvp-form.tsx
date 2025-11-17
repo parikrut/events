@@ -21,7 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 
 interface EventData {
     id: string;
-    organizerId: string;
+    lineupId: string;
     slug: string;
     title: string;
     groomName: string | null;
@@ -67,9 +67,9 @@ interface GuestWithEvents {
     id: string;
     fullName: string;
     email: string;
-    attendeeLimit: number;
     invitations: Array<{
         event: EventDetails;
+        attendeeLimit: number;
     }>;
 }
 
@@ -103,7 +103,7 @@ export function RSVPForm({ eventData }: RSVPFormProps) {
     const onStep1Submit = async (data: Step1FormData) => {
         try {
             setIsCheckingName(true);
-            const response = await checkGuestByName(data.fullName, eventData.organizerId);
+            const response = await checkGuestByName(data.fullName, eventData.lineupId);
 
             if (!response.success) {
                 toast({
@@ -122,7 +122,7 @@ export function RSVPForm({ eventData }: RSVPFormProps) {
                 const eventDefaults = response.guest.invitations.map((invitation) => ({
                     eventId: invitation.event.id,
                     isAttending: false,
-                    attendeeCount: response.guest.attendeeLimit > 0 ? response.guest.attendeeLimit : 1,
+                    attendeeCount: invitation.attendeeLimit > 0 ? invitation.attendeeLimit : 1,
                 }));
 
                 step2Form.reset({ events: eventDefaults });
@@ -387,16 +387,16 @@ export function RSVPForm({ eventData }: RSVPFormProps) {
                                                             <Input
                                                                 type="number"
                                                                 min={1}
-                                                                max={guestData.attendeeLimit > 0 ? guestData.attendeeLimit : undefined}
+                                                                max={invitation.attendeeLimit > 0 ? invitation.attendeeLimit : undefined}
                                                                 className="w-20 h-8 text-sm"
                                                                 {...step2Form.register(`events.${index}.attendeeCount`, {
                                                                     valueAsNumber: true,
                                                                 })}
                                                             />
                                                         </FormControl>
-                                                        {guestData.attendeeLimit > 0 && (
+                                                        {invitation.attendeeLimit > 0 && (
                                                             <FormDescription className="text-xs m-0">
-                                                                Max {guestData.attendeeLimit}
+                                                                Max {invitation.attendeeLimit}
                                                             </FormDescription>
                                                         )}
                                                     </div>

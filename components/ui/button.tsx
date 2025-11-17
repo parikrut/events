@@ -2,14 +2,15 @@ import * as React from "react"
 
 export interface ButtonProps
     extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: "default" | "outline"
+    variant?: "default" | "outline" | "ghost"
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     ({ className = "", variant = "default", ...props }, ref) => {
         const variantClasses = {
             default: "bg-linear-to-r from-blue-600 via-purple-600 to-pink-500 text-white hover:opacity-90",
-            outline: "border-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50"
+            outline: "border-2 border-gray-300 bg-white text-gray-700 hover:bg-gray-50",
+            ghost: "bg-transparent hover:bg-gray-100 text-gray-700"
         }
 
         return (
