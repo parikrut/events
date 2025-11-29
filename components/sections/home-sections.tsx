@@ -243,7 +243,7 @@ export function RSVPSection() {
                             </li>
                         </ul>
                         <a
-                            href="https://www.krutikparikh.ca/contact"
+                            href="https://rsvp.krutikparikh.ca/"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg gradient-neural text-white font-medium hover:shadow-lg hover:shadow-primary/25 transition-all"
@@ -312,7 +312,7 @@ export function PicasaurSection() {
                             </li>
                         </ul>
                         <a
-                            href="https://www.krutikparikh.ca/contact"
+                            href="https://picasaur.krutikparikh.ca/"
                             target="_blank"
                             rel="noopener noreferrer"
                             className="inline-flex items-center gap-2 px-6 py-3 rounded-lg gradient-cyber text-white font-medium hover:shadow-lg hover:shadow-primary/25 transition-all"
